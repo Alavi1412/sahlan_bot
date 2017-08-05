@@ -14,6 +14,7 @@ class User
     private $user_firstname;
     private $text;
     private $db;
+    private $emailStatus;
 
     function __construct($user_id, $message_id, $user_firstname, $text)
     {
@@ -23,6 +24,7 @@ class User
         $this->user_firstname = $user_firstname;
         $this->text = $text;
         $this->level = $this->getLevel();
+        $this->emailStatus = $this->getEmailStatus();
     }
 
     private function sendMessage($text, $inline)
@@ -62,6 +64,146 @@ class User
         if ($this->text == "/start")
             $this->starter();
         elseif ($this->level == "begin")
+            $this->beginner();
+        elseif ($this->level == "product_showed")
+            $this->productManager();
+        elseif ($this->level == "office_partition_showed")
+            $this->officePartitionManager();
+        elseif ($this->level == "classic_partition_showed")
+            $this->classicPartitionManager();
+
+    }
+
+    private function setEmailStatus($status)
+    {
+        mysqli_query($this->db, "UPDATE sahlan_bot.users SET email_status = '{$status}'");
+    }
+
+    private function getEmailStatus()
+    {
+        $result = mysqli_query($this->db, "SELECT * FROM sahlan_bot.users WHERE user_id = {$this->user_id}");
+        $row = mysqli_fetch_array($result);
+        return $row['email_status'];
+    }
+
+    private function classicPartitionManager()
+    {
+        if (!$this->checkMail())
+        {
+            $this->editMessageText("برای دریافت کاتالوگ ایمیل خود را وارد کنید.", []);
+        }
+        else
+        {
+            //TODO complete email check
+        }
+    }
+
+    private function setLevel($level)
+    {
+        mysqli_query($this->db,"UPDATE sahlan_bot.users SET level = '{$level}' WHERE user_id = {$this->user_id}");
+    }
+
+    private function checkMail()
+    {
+        $result = mysqli_query($this->db, "SELECT email FROM sahlan_bot.users WHERE user_id = {$this->user_id}");
+        $row = mysqli_fetch_array($result);
+        if ($row)
+            return true;
+        else
+            return false;
+    }
+
+    private function officePartitionManager()
+    {
+        if ($this->text == "Classic_Partition")
+            $this->showClassicPartition();
+    }
+
+    private function showClassicPartition()
+    {
+        $this->setLevel("classic_partition_showed");
+        $this->editMessageText("ارتیشن کلاسیک سهلان به گونه طراحی شده است که دفتر کاري شما در ذهن ها ماندگار شود. طراحی هوشمند و تطابق با
+جدیدترین متدهاي طراحی فضاي اداري، اصلی ترین ویژگی هاي پارتیشن کلاسیک محسوب می شوند", [
+            [
+                ["text" => "دریافت کاتالوگ", "callback_data" => "Get_Catalog"]
+            ],
+            [
+                ["text" => "پروژه های مرتبط", "callback_data" => "Related_Projects"]
+            ],
+            [
+                ["text" => "تماس با ما", "callback_data" => "Contact_Us"]
+            ],
+            [
+                ["text" => "منوی اصلی", "callback_data" => "Main_Menu"]
+            ]
+        ]);
+    }
+
+    private function beginner()
+    {
+        if ($this->text == "Product_Us_Button")
+            $this->showProduct();
+        elseif ($this->text == "Project_Us_Button")
+            $this->showProject();
+        elseif ($this->text == "About_Us_Button")
+            $this->showAbout();
+        elseif ($this->text == "Contact_Us_Button")
+            $this->contactUs();
+
+    }
+
+    private function productManager()
+    {
+        if ($this->text == "Office_Partition")
+            $this->showOfficePartition();
+    }
+
+    private function showOfficePartition()
+    {
+        $this->setLevel("office_partition_showed");
+        $this->editMessageText("پارتیشن هاي اداري سهلان به دو دسته پارتیشن هاي کلاسیک و پارتیشن هاي اداري تقسیم می شوند.
+با انتخاب هر مورد می توانید کاتالوگ محصول را دریافت کنید و پروژه هاي مرتبط با آن محصول را مشاهده نمایید.", [
+    [
+        ["text" => "پارتیشن کلاسیک", "callback_data" => "Classic_Partition"]
+    ],
+            [
+                ["text" => "پارتیشن هاي دوجداره و فریملس", "callback_data" => "Partition_Frimls"]
+            ]
+        ]);
+    }
+
+    private function showProduct()
+    {
+        $this->setLevel("product_showed");
+        $this->editMessageText("محصولات سهلان به دو دسته کلی دکوراسیون اداری و سازه های نمایشگاهی تقیسم می شود.
+شم می توانید با استفاده از منوی زیر کاتالوگ های هر محصول را در یافت کنید و پروژه های مربوط به آن را مشاهده نمایید.",[
+            [
+                ["text" => "پارتیشن های اداری", "callback_data" => "Office_Partition"]
+            ],
+            [
+                ["text" => "مبلمان اداری", "callback_data" => "Office_Couch"]
+            ],
+            [
+                ["text" => "تجهیزات اداری", "callback_data" => "Office_Supply"]
+            ],
+            [
+                ["text" => "سازه های نمایشگاهی", "callback_data" => "Exhibition_Structure"]
+            ]
+        ]);
+    }
+
+    private function showProject()
+    {
+
+    }
+
+    private function showAbout()
+    {
+
+    }
+
+    private function contactUs()
+    {
 
     }
 
