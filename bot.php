@@ -33,14 +33,16 @@ function main()
                 $text = $update->callback_query->data;
                 $user_id = $update->callback_query->from->id;
                 $user_firstname = $update->callback_query->from->first_name;
-                $username = $update->callback_query->from->username;
+//                $username = $update->callback_query->from->username;
                 $message_id = $update->callback_query->message->message_id;
             } else {
                 $text = $update->message->text;
                 $user_id = $update->message->chat->id;
-                $username = $update->message->from->username;
+//                $username = $update->message->from->username;
                 $user_firstname = $update->message->from->first_name;
             }
+            $User = new User($user_id,$message_id, $user_firstname, $text);
+            echo $User->getLevel();
             $last_updated_id = $update->update_id;              //should be removed
         }           //should be removed
     }               //should be removed
