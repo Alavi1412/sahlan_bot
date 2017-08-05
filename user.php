@@ -61,6 +61,8 @@ class User
 
     public function process()
     {
+        if ($this->emailStatus == "getting_email")
+            mysqli_fetch_array($this->db, "UPDATE sahlan_bot.users SET email = '{$this->text}', email_status = NULL WHERE user_id = {$this->user_id}");
         if ($this->text == "/start")
             $this->starter();
         elseif ($this->level == "begin")
@@ -86,16 +88,34 @@ class User
         return $row['email_status'];
     }
 
+    private function emailGetting()
+    {
+        $this->setEmailStatus("getting_email");
+        $this->editMessageText("برای دریافت کاتالوگ ایمیل خود را وارد کنید.", []);
+    }
+
     private function classicPartitionManager()
     {
         if (!$this->checkMail())
-        {
-            $this->editMessageText("برای دریافت کاتالوگ ایمیل خود را وارد کنید.", []);
-        }
+            $this->emailGetting();
         else
         {
-            //TODO complete email check
+            if ($this->text == "Get_Catalog")
+            {
+                $this->editMessageText("فایل را دریافت کنید")
+            }
         }
+    }
+    private function getClassicPartitionCatalog()
+    {
+        $result = mysqli_query($this->db, "SELECT * FROM sahlan_bot.catalog");
+        $row = mysqli_fetch_array($result);
+        return $row['classic_partition'];
+    }
+
+    private function sendDocument($url)
+    {
+        $this->makeCurl("sendDocument", ["chat_id" => $this->user_id, "document" => $url]);
     }
 
     private function setLevel($level)
