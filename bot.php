@@ -40,9 +40,10 @@ function main()
                 $user_id = $update->message->chat->id;
 //                $username = $update->message->from->username;
                 $user_firstname = $update->message->from->first_name;
+                $message_id = $update->callback_query->message->message_id;
             }
             $User = new User($user_id,$message_id, $user_firstname, $text);
-            echo $User->getLevel();
+            $User->process();
             $last_updated_id = $update->update_id;              //should be removed
         }           //should be removed
     }               //should be removed
