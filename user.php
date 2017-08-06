@@ -73,7 +73,35 @@ class User
             $this->officePartitionManager();
         elseif ($this->level == "classic_partition_showed")
             $this->classicPartitionManager();
+        elseif ($this->level == "frimls_partition_showed")
+            $this->frimlsPartitionManager();
 
+    }
+
+    private function frimlsPartitionManager()
+    {
+        if ($this->text == "Get_Catalog")
+        {
+            $this->editMessageText("فایل را دریافت کنید", []);
+            $this->sendDocument($this->getFrimlsPartitionCatalog());
+            $this->sendMessage("برای بازگشت بر روی منوی اصلی بزنید.", [
+                [
+                    ["text" => "منوی اصلی", "callback_data" => "Main_Menu"]
+                ]
+            ]);
+        }
+        elseif ($this->text == "Contact_Us")
+            $this->editMessageText("ورود به سایت", [
+                [
+                    ["text" => "تماس با ما", "url" => "http://www.sahlan.co/%D8%AA%D9%85%D8%A7%D8%B3-%D8%A8%D8%A7-%D9%85%D8%A7/"]
+                ],
+                [
+                    ["text" => "منوی اصلی", "callback_data" => "Main_Menu"]
+                ]
+            ]);
+        elseif ($this->text == "Main_Menu")
+            $this->showMainMenu(true);
+        //TODO other buttons fucntions
     }
 
     private function setEmailStatus($status)
@@ -96,21 +124,43 @@ class User
 
     private function classicPartitionManager()
     {
-        if (!$this->checkMail())
-            $this->emailGetting();
-        else
-        {
+
             if ($this->text == "Get_Catalog")
             {
-                $this->editMessageText("فایل را دریافت کنید")
+                $this->editMessageText("فایل را دریافت کنید", []);
+                $this->sendDocument($this->getClassicPartitionCatalog());
+                $this->sendMessage("برای بازگشت بر روی منوی اصلی بزنید.", [
+                    [
+                        ["text" => "منوی اصلی", "callback_data" => "Main_Menu"]
+                    ]
+                ]);
             }
-        }
+            elseif ($this->text == "Contact_Us")
+                $this->editMessageText("ورود به سایت", [
+                    [
+                        ["text" => "تماس با ما", "url" => "http://www.sahlan.co/%D8%AA%D9%85%D8%A7%D8%B3-%D8%A8%D8%A7-%D9%85%D8%A7/"]
+                    ],
+                    [
+                        ["text" => "منوی اصلی", "callback_data" => "Main_Menu"]
+                    ]
+                ]);
+            elseif ($this->text == "Main_Menu")
+                $this->showMainMenu(true);
+            //TODO other buttons fucntions
     }
+
     private function getClassicPartitionCatalog()
     {
         $result = mysqli_query($this->db, "SELECT * FROM sahlan_bot.catalog");
         $row = mysqli_fetch_array($result);
         return $row['classic_partition'];
+    }
+
+    private function getFrimlsPartitionCatalog()
+    {
+        $result = mysqli_query($this->db, "SELECT * FROM sahlan_bot.catalog");
+        $row = mysqli_fetch_array($result);
+        return $row['frimls_partition'];
     }
 
     private function sendDocument($url)
@@ -137,26 +187,81 @@ class User
     {
         if ($this->text == "Classic_Partition")
             $this->showClassicPartition();
+        elseif ($this->text == "Partition_Frimls")
+            $this->showFrimlsPartition();
+    }
+
+    private function showMainMenu($editStatus)
+    {
+        $text = "با استفاده از منوی زیر، می توانید از محصولات و پروژه های ما دیدن فرمایید.";
+        $inline_keyboard =
+            [
+                [
+                    ["text" => "محصولات سهلان", "callback_data" => "Product_Us_Button"]
+                ],
+                [
+                    ["text" => "پروژه های سهلان", "callback_data" => "Project_Us_Button"]
+                ],
+                [
+                    ["text" => "درباره ی سهلان", "callback_data" => "About_Us_Button"]
+                ],
+                [
+                    ["text" => "تماس با سهلان", "callback_data" => "Contact_Us_Button"]
+                ]
+            ];
+        if ($editStatus == true)
+            $this->editMessageText($text, $inline_keyboard);
+        else
+            $this->sendMessage($text, $inline_keyboard);
+    }
+
+    private function showFrimlsPartition()
+    {
+        if (!$this->checkMail())
+            $this->emailGetting();
+        else
+        {
+            $this->setLevel("frimls_partition_showed");
+            $this->sendMessage("پارتیشن اداري یکی از فاکتورهاي مهم در طراحی فضاهاي اداري است. محیط کاري شما باید پاسخگوي نیازهاي شما باشد، باید
+خود را با نیازهاي شما تطبیق دهد و همچنان نقش خود را به عنوان عاملی در آسایش و جذب نیروهاي کاري ایفا کند.", [
+                [
+                    ["text" => "دریافت کاتالوگ", "callback_data" => "Get_Catalog"]
+                ],
+                [
+                    ["text" => "پروژه های مرتبط", "callback_data" => "Related_Projects"]
+                ],
+                [
+                    ["text" => "تماس با ما", "callback_data" => "Contact_Us"]
+                ],
+                [
+                    ["text" => "منوی اصلی", "callback_data" => "Main_Menu"]
+                ]
+            ]);
+        }
     }
 
     private function showClassicPartition()
     {
-        $this->setLevel("classic_partition_showed");
-        $this->editMessageText("ارتیشن کلاسیک سهلان به گونه طراحی شده است که دفتر کاري شما در ذهن ها ماندگار شود. طراحی هوشمند و تطابق با
+        if (!$this->checkMail())
+            $this->emailGetting();
+        else {
+            $this->setLevel("classic_partition_showed");
+            $this->sendMessage("ارتیشن کلاسیک سهلان به گونه طراحی شده است که دفتر کاري شما در ذهن ها ماندگار شود. طراحی هوشمند و تطابق با
 جدیدترین متدهاي طراحی فضاي اداري، اصلی ترین ویژگی هاي پارتیشن کلاسیک محسوب می شوند", [
-            [
-                ["text" => "دریافت کاتالوگ", "callback_data" => "Get_Catalog"]
-            ],
-            [
-                ["text" => "پروژه های مرتبط", "callback_data" => "Related_Projects"]
-            ],
-            [
-                ["text" => "تماس با ما", "callback_data" => "Contact_Us"]
-            ],
-            [
-                ["text" => "منوی اصلی", "callback_data" => "Main_Menu"]
-            ]
-        ]);
+                [
+                    ["text" => "دریافت کاتالوگ", "callback_data" => "Get_Catalog"]
+                ],
+                [
+                    ["text" => "پروژه های مرتبط", "callback_data" => "Related_Projects"]
+                ],
+                [
+                    ["text" => "تماس با ما", "callback_data" => "Contact_Us"]
+                ],
+                [
+                    ["text" => "منوی اصلی", "callback_data" => "Main_Menu"]
+                ]
+            ]);
+        }
     }
 
     private function beginner()
