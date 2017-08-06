@@ -25,6 +25,7 @@ class User
         $this->text = $text;
         $this->level = $this->getLevel();
         $this->emailStatus = $this->getEmailStatus();
+
     }
 
     private function sendMessage($text, $inline)
@@ -59,10 +60,20 @@ class User
         }
     }
 
+    private function afterEmailText()
+    {
+
+        $result = mysqli_query($this->db, "SELECT * FROM sahlan_bot.users WHERE user_id = {$this->user_id}");
+        $row = mysqli_fetch_array($result);
+        mysqli_query($this->db, "UPDATE sahlan_bot.users SET email = '{$this->text}', email_status = NULL WHERE user_id = {$this->user_id}");
+        $this->text = $row['email_status'];
+
+    }
+
     public function process()
     {
-        if ($this->emailStatus == "getting_email")
-            mysqli_fetch_array($this->db, "UPDATE sahlan_bot.users SET email = '{$this->text}', email_status = NULL WHERE user_id = {$this->user_id}");
+        if ($this->emailStatus != NULL)
+            $this->afterEmailText();
         if ($this->text == "/start")
             $this->starter();
         elseif ($this->level == "begin")
@@ -75,6 +86,9 @@ class User
             $this->classicPartitionManager();
         elseif ($this->level == "frimls_partition_showed")
             $this->frimlsPartitionManager();
+        elseif ($this->level == "office_couch_showed")
+            $this->officeCouchManager();
+
 
     }
 
@@ -100,7 +114,10 @@ class User
                 ]
             ]);
         elseif ($this->text == "Main_Menu")
+        {
+            $this->setLevel("begin");
             $this->showMainMenu(true);
+        }
         //TODO other buttons fucntions
     }
 
@@ -112,13 +129,16 @@ class User
     private function getEmailStatus()
     {
         $result = mysqli_query($this->db, "SELECT * FROM sahlan_bot.users WHERE user_id = {$this->user_id}");
-        $row = mysqli_fetch_array($result);
-        return $row['email_status'];
+
+        if ($row = mysqli_fetch_array($result))
+            return $row['email_status'];
+        else
+            return NULL;
     }
 
     private function emailGetting()
     {
-        $this->setEmailStatus("getting_email");
+        $this->setEmailStatus($this->text);
         $this->editMessageText("برای دریافت کاتالوگ ایمیل خود را وارد کنید.", []);
     }
 
@@ -145,7 +165,10 @@ class User
                     ]
                 ]);
             elseif ($this->text == "Main_Menu")
+            {
+                $this->setLevel("begin");
                 $this->showMainMenu(true);
+            }
             //TODO other buttons fucntions
     }
 
@@ -163,6 +186,41 @@ class User
         return $row['frimls_partition'];
     }
 
+    private function getLimaCouchCatalog()
+    {
+        $result = mysqli_query($this->db, "SELECT * FROM sahlan_bot.catalog");
+        $row = mysqli_fetch_array($result);
+        return $row['lima_couch'];
+    }
+
+    private function getTimberCouchCatalog
+    {
+        $result = mysqli_query($this->db, "SELECT * FROM sahlan_bot.catalog");
+        $row = mysqli_fetch_array($result);
+        return $row['timber_couch'];
+    }
+
+    private function getKarinCouchCatalog()
+    {
+        $result = mysqli_query($this->db, "SELECT * FROM sahlan_bot.catalog");
+        $row = mysqli_fetch_array($result);
+        return $row['karin_couch'];
+    }
+
+    private function getEdarCouchCatalog()
+    {
+        $result = mysqli_query($this->db, "SELECT * FROM sahlan_bot.catalog");
+        $row = mysqli_fetch_array($result);
+        return $row['edar_couch'];
+    }
+
+    private function getGroupDeskCatalog()
+    {
+        $result = mysqli_query($this->db, "SELECT * FROM sahlan_bot.catalog");
+        $row = mysqli_fetch_array($result);
+        return $row['group_desk'];
+    }
+
     private function sendDocument($url)
     {
         $this->makeCurl("sendDocument", ["chat_id" => $this->user_id, "document" => $url]);
@@ -175,10 +233,12 @@ class User
 
     private function checkMail()
     {
-        $result = mysqli_query($this->db, "SELECT email FROM sahlan_bot.users WHERE user_id = {$this->user_id}");
+        $result = mysqli_query($this->db, "SELECT * FROM sahlan_bot.users WHERE user_id = {$this->user_id}");
         $row = mysqli_fetch_array($result);
-        if ($row)
+        if ($row['email'])
+        {
             return true;
+        }
         else
             return false;
     }
@@ -264,6 +324,47 @@ class User
         }
     }
 
+    private function officeCouchManager()
+    {
+        if ($this->text == "Lima_Couch")
+            $this->showLimaCouch();
+        elseif ($this->text == "Timber_Couch")
+            $this->showTimberCouch();
+        elseif ($this->text == "Edar_Couch")
+            $this->showEdarCouch();
+        elseif ($this->text == "Karin_Couch")
+            $this->showKarinCouch();
+        elseif ($this->text == "Group_Desk")
+            $this->showGroupDesk();
+    }
+
+    private function showLimaCouch()
+    {
+
+    }
+
+    //TODO Compelte all of these's managers functions
+
+    private function showTimberCouch()
+    {
+
+    }
+
+    private function showEdarCouch()
+    {
+
+    }
+
+    private function showKarinCouch()
+    {
+
+    }
+
+    private function showGroupDesk()
+    {
+
+    }
+
     private function beginner()
     {
         if ($this->text == "Product_Us_Button")
@@ -281,6 +382,8 @@ class User
     {
         if ($this->text == "Office_Partition")
             $this->showOfficePartition();
+        elseif ($this->text == "Office_Couch")
+            $this->showOfficeCouch();
     }
 
     private function showOfficePartition()
@@ -295,6 +398,33 @@ class User
                 ["text" => "پارتیشن هاي دوجداره و فریملس", "callback_data" => "Partition_Frimls"]
             ]
         ]);
+    }
+
+    private function showOfficeCouch()
+    {
+        if (!$this->checkMail())
+            $this->emailGetting();
+        else {
+            $this->setLevel("office_couch_showed");
+            $this->editMessageText("محصولات سهلان به دو دسته کلی دکوراسیون اداري و سازه هاي نمایشگاهی تقسیم می شود.
+شما می توانید با استفاده از منوي زیر کاتالوگ هاي هر محصول را دریافت کنید و پروژه هاي مربوط به آن را مشاهده نمایید.", [
+                [
+                    ["text" => "مبلمان اداري لیما", "callback_data" => "Lima_Couch"]
+                ],
+                [
+                    ["text" => "مبلمان اداري تیمبر", "callback_data" => "Timber_Couch"]
+                ],
+                [
+                    ["text" => "مبلمان اداري ادار", "callback_data" => "Edar_Couch"]
+                ],
+                [
+                    ["text" => "مبلمان اداري کارین", "callback_data" => "Karin_Couch"]
+                ],
+                [
+                    ["text" => "میزهاي گروهی", "callback_data" => "Group_Desk"]
+                ]
+            ]);
+        }
     }
 
     private function showProduct()
