@@ -88,7 +88,18 @@ class User
             $this->frimlsPartitionManager();
         elseif ($this->level == "office_couch_showed")
             $this->officeCouchManager();
-
+        elseif ($this->level == "lima_couch_showed")
+            $this->limaCouchManager();
+        elseif ($this->level == "timber_couch_showed")
+            $this->timberCouchManager();
+        elseif ($this->level == "edar_couch_showed")
+            $this->edarCouchManager();
+        elseif ($this->level == "karin_couch_showed")
+            $this->karinCouchManager();
+        elseif ($this->level == "group_desk_showed")
+            $this->groupDeskManager();
+        elseif ($this->level == "project_showed")
+            $this->projectManager();
 
     }
 
@@ -193,7 +204,7 @@ class User
         return $row['lima_couch'];
     }
 
-    private function getTimberCouchCatalog
+    private function getTimberCouchCatalog()
     {
         $result = mysqli_query($this->db, "SELECT * FROM sahlan_bot.catalog");
         $row = mysqli_fetch_array($result);
@@ -340,29 +351,242 @@ class User
 
     private function showLimaCouch()
     {
-
+        $this->setLevel("lima_couch_showed");
+        $this->editMessageText("متن لیما",[
+            [
+                ["text" => "دریافت کاتالوگ", "callback_data" => "Get_Catalog"]
+            ],
+            [
+                ["text" => "پروژه های مرتبط", "callback_data" => "Related_Projects"]
+            ],
+            [
+                ["text" => "تماس با ما", "callback_data" => "Contact_Us"]
+            ],
+            [
+                ["text" => "صفحه ی اصلی", "callback_data" => "Main_Menu"]
+            ]
+        ]);
     }
 
-    //TODO Compelte all of these's managers functions
+    private function limaCouchManager()
+    {
+        if ($this->text == "Get_Catalog")
+        {
+            $this->editMessageText("فایل را دریافت کنید", []);
+            $this->sendDocument($this->getLimaCouchCatalog());
+            $this->sendMessage("برای بازگشت بر روی منوی اصلی بزنید.", [
+                [
+                    ["text" => "منوی اصلی", "callback_data" => "Main_Menu"]
+                ]
+            ]);
+        }
+        elseif ($this->text == "Contact_Us")
+            $this->editMessageText("ورود به سایت", [
+                [
+                    ["text" => "تماس با ما", "url" => "http://www.sahlan.co/%D8%AA%D9%85%D8%A7%D8%B3-%D8%A8%D8%A7-%D9%85%D8%A7/"]
+                ],
+                [
+                    ["text" => "منوی اصلی", "callback_data" => "Main_Menu"]
+                ]
+            ]);
+        elseif ($this->text == "Main_Menu")
+        {
+            $this->setLevel("begin");
+            $this->showMainMenu(true);
+        }
+        //TODO other buttons fucntions
+    }
 
     private function showTimberCouch()
     {
+        $this->setLevel("timber_couch_showed");
+        $this->editMessageText("متن تیمبر",[
+            [
+                ["text" => "دریافت کاتالوگ", "callback_data" => "Get_Catalog"]
+            ],
+            [
+                ["text" => "پروژه های مرتبط", "callback_data" => "Related_Projects"]
+            ],
+            [
+                ["text" => "تماس با ما", "callback_data" => "Contact_Us"]
+            ],
+            [
+                ["text" => "صفحه ی اصلی", "callback_data" => "Main_Menu"]
+            ]
+        ]);
+    }
 
+    private function timberCouchManager()
+    {
+        if ($this->text == "Get_Catalog")
+        {
+            $this->editMessageText("فایل را دریافت کنید", []);
+            $this->sendDocument($this->getTimberCouchCatalog());
+            $this->sendMessage("برای بازگشت بر روی منوی اصلی بزنید.", [
+                [
+                    ["text" => "منوی اصلی", "callback_data" => "Main_Menu"]
+                ]
+            ]);
+        }
+        elseif ($this->text == "Contact_Us")
+            $this->editMessageText("ورود به سایت", [
+                [
+                    ["text" => "تماس با ما", "url" => "http://www.sahlan.co/%D8%AA%D9%85%D8%A7%D8%B3-%D8%A8%D8%A7-%D9%85%D8%A7/"]
+                ],
+                [
+                    ["text" => "منوی اصلی", "callback_data" => "Main_Menu"]
+                ]
+            ]);
+        elseif ($this->text == "Main_Menu")
+        {
+            $this->setLevel("begin");
+            $this->showMainMenu(true);
+        }
+        //TODO other buttons fucntions
     }
 
     private function showEdarCouch()
     {
+        $this->setLevel("edar_couch_showed");
+        $this->editMessageText("متن ادار",[
+            [
+                ["text" => "دریافت کاتالوگ", "callback_data" => "Get_Catalog"]
+            ],
+            [
+                ["text" => "پروژه های مرتبط", "callback_data" => "Related_Projects"]
+            ],
+            [
+                ["text" => "تماس با ما", "callback_data" => "Contact_Us"]
+            ],
+            [
+                ["text" => "صفحه ی اصلی", "callback_data" => "Main_Menu"]
+            ]
+        ]);
+    }
 
+    private function edarCouchManager()
+    {
+        if ($this->text == "Get_Catalog")
+        {
+            $this->editMessageText("فایل را دریافت کنید", []);
+            $this->sendDocument($this->getEdarCouchCatalog());
+            $this->sendMessage("برای بازگشت بر روی منوی اصلی بزنید.", [
+                [
+                    ["text" => "منوی اصلی", "callback_data" => "Main_Menu"]
+                ]
+            ]);
+        }
+        elseif ($this->text == "Contact_Us")
+            $this->editMessageText("ورود به سایت", [
+                [
+                    ["text" => "تماس با ما", "url" => "http://www.sahlan.co/%D8%AA%D9%85%D8%A7%D8%B3-%D8%A8%D8%A7-%D9%85%D8%A7/"]
+                ],
+                [
+                    ["text" => "منوی اصلی", "callback_data" => "Main_Menu"]
+                ]
+            ]);
+        elseif ($this->text == "Main_Menu")
+        {
+            $this->setLevel("begin");
+            $this->showMainMenu(true);
+        }
+        //TODO other buttons fucntions
     }
 
     private function showKarinCouch()
     {
+        $this->setLevel("karin_couch_showed");
+        $this->editMessageText("متن کارین",[
+            [
+                ["text" => "دریافت کاتالوگ", "callback_data" => "Get_Catalog"]
+            ],
+            [
+                ["text" => "پروژه های مرتبط", "callback_data" => "Related_Projects"]
+            ],
+            [
+                ["text" => "تماس با ما", "callback_data" => "Contact_Us"]
+            ],
+            [
+                ["text" => "صفحه ی اصلی", "callback_data" => "Main_Menu"]
+            ]
+        ]);
+    }
 
+    private function karinCouchManager()
+    {
+        if ($this->text == "Get_Catalog")
+        {
+            $this->editMessageText("فایل را دریافت کنید", []);
+            $this->sendDocument($this->getKarinCouchCatalog());
+            $this->sendMessage("برای بازگشت بر روی منوی اصلی بزنید.", [
+                [
+                    ["text" => "منوی اصلی", "callback_data" => "Main_Menu"]
+                ]
+            ]);
+        }
+        elseif ($this->text == "Contact_Us")
+            $this->editMessageText("ورود به سایت", [
+                [
+                    ["text" => "تماس با ما", "url" => "http://www.sahlan.co/%D8%AA%D9%85%D8%A7%D8%B3-%D8%A8%D8%A7-%D9%85%D8%A7/"]
+                ],
+                [
+                    ["text" => "منوی اصلی", "callback_data" => "Main_Menu"]
+                ]
+            ]);
+        elseif ($this->text == "Main_Menu")
+        {
+            $this->setLevel("begin");
+            $this->showMainMenu(true);
+        }
+        //TODO other buttons fucntions
     }
 
     private function showGroupDesk()
     {
+        $this->setLevel("group_desk_showed");
+        $this->editMessageText("متن میز گروهی",[
+            [
+                ["text" => "دریافت کاتالوگ", "callback_data" => "Get_Catalog"]
+            ],
+            [
+                ["text" => "پروژه های مرتبط", "callback_data" => "Related_Projects"]
+            ],
+            [
+                ["text" => "تماس با ما", "callback_data" => "Contact_Us"]
+            ],
+            [
+                ["text" => "صفحه ی اصلی", "callback_data" => "Main_Menu"]
+            ]
+        ]);
+    }
 
+    private function groupDeskManager()
+    {
+        if ($this->text == "Get_Catalog")
+        {
+            $this->editMessageText("فایل را دریافت کنید", []);
+            $this->sendDocument($this->getGroupDeskCatalog());
+            $this->sendMessage("برای بازگشت بر روی منوی اصلی بزنید.", [
+                [
+                    ["text" => "منوی اصلی", "callback_data" => "Main_Menu"]
+                ]
+            ]);
+        }
+        elseif ($this->text == "Contact_Us")
+            $this->editMessageText("ورود به سایت", [
+                [
+                    ["text" => "تماس با ما", "url" => "http://www.sahlan.co/%D8%AA%D9%85%D8%A7%D8%B3-%D8%A8%D8%A7-%D9%85%D8%A7/"]
+                ],
+                [
+                    ["text" => "منوی اصلی", "callback_data" => "Main_Menu"]
+                ]
+            ]);
+        elseif ($this->text == "Main_Menu")
+        {
+            $this->setLevel("begin");
+            $this->showMainMenu(true);
+        }
+        //TODO other buttons fucntions
     }
 
     private function beginner()
@@ -406,7 +630,7 @@ class User
             $this->emailGetting();
         else {
             $this->setLevel("office_couch_showed");
-            $this->editMessageText("محصولات سهلان به دو دسته کلی دکوراسیون اداري و سازه هاي نمایشگاهی تقسیم می شود.
+            $this->sendMessage("محصولات سهلان به دو دسته کلی دکوراسیون اداري و سازه هاي نمایشگاهی تقسیم می شود.
 شما می توانید با استفاده از منوي زیر کاتالوگ هاي هر محصول را دریافت کنید و پروژه هاي مربوط به آن را مشاهده نمایید.", [
                 [
                     ["text" => "مبلمان اداري لیما", "callback_data" => "Lima_Couch"]
@@ -449,7 +673,54 @@ class User
 
     private function showProject()
     {
+        if (!$this->checkMail())
+            $this->emailGetting();
+        else
+        {
+            $this->setLevel("project_showed");
+            $this->sendMessage("متن پروژه",[
+                [
+                    ["text" => "پروژه های اداری", "callback_data" => "Office_Project"]
+                ],
+                [
+                    ["text" => "پروژه های نمایشگاهی", "callback_data" => "Exhibition_Project"]
+                ]
+            ]);
+        }
+    }
 
+    private function projectManager()
+    {
+        if ($this->text == "Office_Project")
+            $this->showOfficeProject();
+        elseif ($this->text== "Exhibition_Project")
+            $this->showExhibitionProject();
+    }
+
+    private function showOfficeProject()
+    {
+        $this->setLevel("office_project_showed");
+        $this->editMessageText("پروژه های اداری", [
+            [
+                ["text" => "پروژه های برتر", "callback_data" => "Best_Projects"]
+            ],
+            [
+                ["text" => "تمامی پروژه ها", "callback_data" => "All_Projects"]
+            ]
+        ]);
+    }
+
+    private function showExhibitionProject()
+    {
+        $this->setLevel("exhibition_project_showed");
+        $this->editMessageText("پروژه های نمایشگاهی", [
+            [
+                ["text" => "پروژه های برتر", "callback_data" => "Best_Projects"]
+            ],
+            [
+                ["text" => "تمامی پروژه ها", "callback_data" => "All_Projects"]
+            ]
+        ]);
     }
 
     private function showAbout()
