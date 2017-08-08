@@ -30,7 +30,7 @@ class User
 
     private function sendMessage($text, $inline)
     {
-        $this->makeCurl("sendMessage", ["chat_id" => $this->user_id, "text" => $text, "reply_markup" => json_encode([
+        return $this->makeCurl("sendMessage", ["chat_id" => $this->user_id, "text" => $text, "reply_markup" => json_encode([
             "inline_keyboard" =>
 
                 $inline
@@ -40,7 +40,7 @@ class User
 
     private function editMessageText($text, $inline)
     {
-        $this->makeCurl("editMessageText", ["message_id" => $this->message_id ,"chat_id" => $this->user_id, "text" => $text, "reply_markup" => json_encode([
+        return $this->makeCurl("editMessageText", ["message_id" => $this->message_id ,"chat_id" => $this->user_id, "text" => $text, "reply_markup" => json_encode([
             "inline_keyboard" =>
 
                 $inline
@@ -108,6 +108,8 @@ class User
             $this->officeSupplyManager();
         elseif ($this->level == "exhibition_structure_showed")
             $this->exhibitionStructureManager();
+        elseif ($this->level == "all_office_project_showed")
+            $this->allOfficeProjectManager();
 
     }
 
@@ -820,6 +822,11 @@ class User
             return floor($count/4) + 1;
     }
 
+    private function getDate($name)
+    {
+        return mysqli_query($this->db, "SELECT * FROM sahlan_bot.project WHERE name_english = '{$name}'");
+    }
+
     private function showProject()
     {
         if (!$this->checkMail())
@@ -878,14 +885,100 @@ class User
         if (!$this->checkMail())
             $this->emailGetting();
         else {
+            $this->setLevel("all_office_project_showed");
             $result = $this->getProjects("office", 0);
+            $count = 0;
+            $arr = [[["text" => "منوی اصلی", "callback_data" => "Main_Menu"]]];
+            while ($row = mysqli_fetch_array($result))
+            {
+                array_push($arr, [["text" => $row['name'], "callback_data" => $row['name_english']]]);
+                $count++;
+                if ($count > 4)
+                    break;
+            }
+            array_push($arr, [["text" => "صفحه ی بعد", "callback_data" => "Next_Page_1"]]);
+            echo $this->editMessageText("انتخاب کنید.",[$arr]);
         }
 
     }
 
-    private function AllOfficeProjectManager()
+    private function allOfficeProjectManager()
     {
+        if ($this->text == "Main_Menu")
+        {
+            $this->setLevel("begin");
+            $this->showMainMenu(true);
+        }
+        elseif (strpos($this->text, "Next_Page") == 0)
+        {
+            $result = $this->getProjects("office", 0);
+            $arr = [["text" => "منوی اصلی", "callback_data" => "Main_Menu"]];
+            $current_page = (int)$this->text[10];
+            for ($i = 1 ; $i <  $current_page + 1; $i++)
+            {
+                $count = 0;
+                while ($row = mysqli_fetch_array($result))
+                {
+                    $count++;
+                    if ($count > 4)
+                        break;
+                }
+            }
+            $count = 0;
+            while ($row = mysqli_fetch_array($result))
+            {
+                $arr[] = [["text" => $row['name'], "callback_data" => $row['name_english']]];
+                $count++;
+                if ($count > 4)
+                    break;
+            }
+            $pageNumber = $this->projectPageNumber($result);
+            if (($current_page + 1) == $pageNumber)
+                $arr[] = [["text" => "صفحه ی قبل", "callback_data" => "Previews_Page"]];
+            else
+                $arr[] = [["text" => "صفحه ی قبل", "callback_data" => "Previews_Page"],["text" => "صفحه ی بعد", "callback_data" => "Next_Page"]];
+            echo $this->editMessageText("انتخاب کنید.", [$arr]);
 
+        }
+        elseif (strpos($this->text, "Previews_Page") == 0)
+        {
+            $result = $this->getProjects("office", 0);
+            $arr = [["text" => "منوی اصلی", "callback_data" => "Main_Menu"]];
+            $current_page = (int)$this->text[10];
+            for ($i = 1 ; $i <  $current_page - 1 ; $i++)
+            {
+                $count = 0;
+                while ($row = mysqli_fetch_array($result))
+                {
+                    $count++;
+                    if ($count > 4)
+                        break;
+                }
+            }
+            $count = 0;
+            while ($row = mysqli_fetch_array($result))
+            {
+                $arr[] = [["text" => $row['name'], "callback_data" => $row['name_english']]];
+                $count++;
+                if ($count > 4)
+                    break;
+            }
+            if (($current_page - 1) == 0)
+                $arr[] = [["text" => "صفحه ی بعد", "callback_data" => "Next_Page"]];
+            else
+                $arr[] = [["text" => "صفحه ی قبل", "callback_data" => "Previews_Page"],["text" => "صفحه ی بعد", "callback_data" => "Next_Page"]];
+            $this->editMessageText("انتخاب کنید.", [$arr]);
+
+        }
+        elseif($this->getDate($this->text))
+        {
+
+        }
+        else
+        {
+            $this->setLevel("begin");
+            $this->showMainMenu(true);
+        }
     }
 
     private function showExhibitionProject()
