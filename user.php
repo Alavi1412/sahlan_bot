@@ -100,6 +100,14 @@ class User
             $this->groupDeskManager();
         elseif ($this->level == "project_showed")
             $this->projectManager();
+        elseif ($this->level == "office_project_showed")
+            $this->officeProjectManager();
+        elseif ($this->level == "exhibition_project_showed")
+            $this->exhibitionProjectManager();
+        elseif ($this->level == "office_supply_showed")
+            $this->officeSupplyManager();
+        elseif ($this->level == "exhibition_structure_showed")
+            $this->exhibitionStructureManager();
 
     }
 
@@ -232,6 +240,20 @@ class User
         return $row['group_desk'];
     }
 
+    private function getOfficeSupplytCatalog()
+    {
+        $result = mysqli_query($this->db, "SELECT * FROM sahlan_bot.catalog");
+        $row = mysqli_fetch_array($result);
+        return $row['esa'];
+    }
+
+    private function getExhibitionStructureCatalog()
+    {
+        $result = mysqli_query($this->db, "SELECT * FROM sahlan_bot.catalog");
+        $row = mysqli_fetch_array($result);
+        return $row['exhibition'];
+    }
+
     private function sendDocument($url)
     {
         $this->makeCurl("sendDocument", ["chat_id" => $this->user_id, "document" => $url]);
@@ -352,7 +374,7 @@ class User
     private function showLimaCouch()
     {
         $this->setLevel("lima_couch_showed");
-        $this->editMessageText("متن لیما",[
+        $this->editMessageText("میز اداری و مبلمان اداری لیما آمیزه ای از چوب و فلز در نهایت ظرافت و با تمرکز بر ترکیب های چینشی متفاوت برای محیط های کاری با چیدمان های متفاوت طراحی شده اند.",[
             [
                 ["text" => "دریافت کاتالوگ", "callback_data" => "Get_Catalog"]
             ],
@@ -400,7 +422,7 @@ class User
     private function showTimberCouch()
     {
         $this->setLevel("timber_couch_showed");
-        $this->editMessageText("متن تیمبر",[
+        $this->editMessageText("میز مدیریت تیمبر با طراحی مدرن و با جزئیات بی عیب و نقص خود یکی از گزینه های اصلی مدیران و کارشناسان می باشد.",[
             [
                 ["text" => "دریافت کاتالوگ", "callback_data" => "Get_Catalog"]
             ],
@@ -448,7 +470,7 @@ class User
     private function showEdarCouch()
     {
         $this->setLevel("edar_couch_showed");
-        $this->editMessageText("متن ادار",[
+        $this->editMessageText("راهی زیبا، حریم شخصی مشخص، ملحقات متنوع به همراه امکان چینش های متفاوت، میزهای ادار را به عنوان گزینه ای مناسب برای مبلمان اداری معرفی نموده است.",[
             [
                 ["text" => "دریافت کاتالوگ", "callback_data" => "Get_Catalog"]
             ],
@@ -496,7 +518,7 @@ class User
     private function showKarinCouch()
     {
         $this->setLevel("karin_couch_showed");
-        $this->editMessageText("متن کارین",[
+        $this->editMessageText("میزهای کاربین سهلان با استفاده از دیوایدرها و ماژول های مختلف فضای اختصاصی را برای پرسنل فراهم می نماید و بطور همزمان امکان ارتباط بین پرسنل مختلف را به راحتی میسر می سازند",[
             [
                 ["text" => "دریافت کاتالوگ", "callback_data" => "Get_Catalog"]
             ],
@@ -544,7 +566,7 @@ class User
     private function showGroupDesk()
     {
         $this->setLevel("group_desk_showed");
-        $this->editMessageText("متن میز گروهی",[
+        $this->editMessageText("با استفاده از میز گروهی سهلان می توانید همزمان فضای کاری شخصی و فضای کار تیمی داشته باشید.",[
             [
                 ["text" => "دریافت کاتالوگ", "callback_data" => "Get_Catalog"]
             ],
@@ -608,6 +630,114 @@ class User
             $this->showOfficePartition();
         elseif ($this->text == "Office_Couch")
             $this->showOfficeCouch();
+        elseif ($this->text == "Office_Supply")
+            $this->showOfficeSupply();
+        elseif ($this->text == "Exhibition_Structure")
+            $this->showExhibitionStructure();
+    }
+
+    private function showOfficeSupply()
+    {
+        if (!$this->checkMail())
+            $this->emailGetting();
+        else {
+            $this->setLevel("office_supply_showed");
+            $this->sendMessage("اهمیت محیط کار و امکانات و لوازم جانبی اداری موجود در آن بر کسی پوشیده نیست. بدون شک امکانات موجود در محیط کار سبب افزایش بازدهی پرسنل سازمان می شود. ما این اهمیت را درک کرده ایم و تلاش خود را برای رفع نیازهای یک سازمان برای تجهیز فضای اداری خود بکار گرفته ایم.", [
+                [
+                    ["text" => "دریافت کاتالوگ", "callback_data" => "Get_Catalog"]
+                ],
+                [
+                    ["text" => "پروژه های مرتبط", "callback_data" => "Related_Projects"]
+                ],
+                [
+                    ["text" => "تماس با ما", "callback_data" => "Contact_Us"]
+                ],
+                [
+                    ["text" => "صفحه ی اصلی", "callback_data" => "Main_Menu"]
+                ]
+            ]);
+        }
+    }
+
+    private function officeSupplyManager()
+    {
+        if ($this->text == "Get_Catalog")
+        {
+            $this->editMessageText("فایل را دریافت کنید", []);
+            $this->sendDocument($this->getOfficeSupplytCatalog());
+            $this->sendMessage("برای بازگشت بر روی منوی اصلی بزنید.", [
+                [
+                    ["text" => "منوی اصلی", "callback_data" => "Main_Menu"]
+                ]
+            ]);
+        }
+        elseif ($this->text == "Contact_Us")
+            $this->editMessageText("ورود به سایت", [
+                [
+                    ["text" => "تماس با ما", "url" => "http://www.sahlan.co/%D8%AA%D9%85%D8%A7%D8%B3-%D8%A8%D8%A7-%D9%85%D8%A7/"]
+                ],
+                [
+                    ["text" => "منوی اصلی", "callback_data" => "Main_Menu"]
+                ]
+            ]);
+        elseif ($this->text == "Main_Menu")
+        {
+            $this->setLevel("begin");
+            $this->showMainMenu(true);
+        }
+        //TODO other buttons fucntions
+    }
+
+    private function showExhibitionStructure()
+    {
+        if (!$this->checkMail())
+            $this->emailGetting();
+        else {
+            $this->setLevel("exhibition_structure_showed");
+            $this->sendMessage("گروه سهلان با دید ساده سازی فرآیند حضور سازمان ها در نمایشگاه ها و کاهش استرس های ناشی از فراآیند ساخت غرفه نمایشگاهی با تکیه بر دانش و تکنولوژی خود سازه ای خاص و نوین با حداقل زمان مورد نیاز برای پیاده سازی را طراحی و تولید نموده است.", [
+                [
+                    ["text" => "دریافت کاتالوگ", "callback_data" => "Get_Catalog"]
+                ],
+                [
+                    ["text" => "پروژه های مرتبط", "callback_data" => "Related_Projects"]
+                ],
+                [
+                    ["text" => "تماس با ما", "callback_data" => "Contact_Us"]
+                ],
+                [
+                    ["text" => "صفحه ی اصلی", "callback_data" => "Main_Menu"]
+                ]
+            ]);
+        }
+    }
+
+    private function exhibitionStructureManager()
+    {
+        if ($this->text == "Get_Catalog")
+        {
+            $this->editMessageText("فایل را دریافت کنید", []);
+            $this->sendDocument($this->getExhibitionStructureCatalog());
+            $this->sendMessage("برای بازگشت بر روی منوی اصلی بزنید.", [
+                [
+                    ["text" => "منوی اصلی", "callback_data" => "Main_Menu"]
+                ]
+            ]);
+        }
+        elseif ($this->text == "Contact_Us")
+            $this->editMessageText("ورود به سایت", [
+                [
+                    ["text" => "تماس با ما", "url" => "http://www.sahlan.co/%D8%AA%D9%85%D8%A7%D8%B3-%D8%A8%D8%A7-%D9%85%D8%A7/"]
+                ],
+                [
+                    ["text" => "منوی اصلی", "callback_data" => "Main_Menu"]
+                ]
+            ]);
+        elseif ($this->text == "Main_Menu")
+        {
+            $this->setLevel("begin");
+            $this->showMainMenu(true);
+        }
+        //TODO other buttons fucntions
     }
 
     private function showOfficePartition()
@@ -671,6 +801,25 @@ class User
         ]);
     }
 
+    private function getProjects($type, $best)
+    {
+        if ($best == 1)
+            return mysqli_query($this->db, "SELECT * FROM sahlan_bot.project WHERE type = '{$type}'AND best = 1");
+        elseif ($best == 0)
+            return mysqli_query($this->db, "SELECT * FROM sahlan_bot.project WHERE type = '{$type}'");
+    }
+
+    private function projectPageNumber($result)
+    {
+        $count = 0;
+        while (mysqli_fetch_array($result))
+            $count++;
+        if (is_int($count/4))
+            return $count/4;
+        else
+            return floor($count/4) + 1;
+    }
+
     private function showProject()
     {
         if (!$this->checkMail())
@@ -678,7 +827,7 @@ class User
         else
         {
             $this->setLevel("project_showed");
-            $this->sendMessage("متن پروژه",[
+            $this->sendMessage("گروه صنعتی سهلان با در اختیار داشتن سه کارخانه مجهز در منطقه خرمدشت تهران و با بهره مندی از 14000 متر مربع فضای تولیدی و قدرت تولید سالانه 27000 متر مربع پارتیشن، توانایی پاسخ گویی به نیازهای طیف وسیعی از سازمان ها را در صنعت پارتیشن و مبلمان اداری دارد. ظرفیت تولید بالا و تنوع محصولات، سهلان را به یکی از بزرگترین فعالان صنعت دکوراسیون اداری تبدیل کرده است.",[
                 [
                     ["text" => "پروژه های اداری", "callback_data" => "Office_Project"]
                 ],
@@ -700,7 +849,7 @@ class User
     private function showOfficeProject()
     {
         $this->setLevel("office_project_showed");
-        $this->editMessageText("پروژه های اداری", [
+        $this->editMessageText("با تکیه بر توانایی تولیدی، و با استفاده از به روزترین ماشین آلات و با کیفیت ترین مواد اولیه، تجهیز فضای اداری بسیاری از شرکت های داخلی و خارجی را در ایران برعهده داشته ایم. اعتماد و رضایت به دست آمده از اجرای این طرح ها را تأییدی بر صحت مسیر خود می دانیم.", [
             [
                 ["text" => "پروژه های برتر", "callback_data" => "Best_Projects"]
             ],
@@ -710,10 +859,39 @@ class User
         ]);
     }
 
+    private function officeProjectManager()
+    {
+        if ($this->text == "Best_Projects")
+            $this->showBestOfficeProject();
+        elseif ($this->text == "All_Projects")
+            $this->showAllOfficeProject();
+
+    }
+
+    private function showBestOfficeProject()
+    {
+
+    }
+
+    private function showAllOfficeProject()
+    {
+        if (!$this->checkMail())
+            $this->emailGetting();
+        else {
+            $result = $this->getProjects("office", 0);
+        }
+
+    }
+
+    private function AllOfficeProjectManager()
+    {
+
+    }
+
     private function showExhibitionProject()
     {
         $this->setLevel("exhibition_project_showed");
-        $this->editMessageText("پروژه های نمایشگاهی", [
+        $this->editMessageText("با تکیه بر توانایی تولیدی، و با استفاده از به روزترین ماشین آلات و با کیفیت ترین مواد اولیه، تجهیز فضای اداری بسیاری از شرکت های داخلی و خارجی را در ایران برعهده داشته ایم. اعتماد و رضایت به دست آمده از اجرای این طرح ها را تأییدی بر صحت مسیر خود می دانیم.", [
             [
                 ["text" => "پروژه های برتر", "callback_data" => "Best_Projects"]
             ],
@@ -721,6 +899,24 @@ class User
                 ["text" => "تمامی پروژه ها", "callback_data" => "All_Projects"]
             ]
         ]);
+    }
+
+    private function exhibitionProjectManager()
+    {
+        if ($this->text == "Best_Projects")
+            $this->showBestExhibitionProject();
+        elseif ($this->text == "All_Projects")
+            $this->showAllBestExhibition();
+    }
+
+    private function showBestExhibitionProject()
+    {
+
+    }
+
+    private function showAllBestExhibition()
+    {
+
     }
 
     private function showAbout()
