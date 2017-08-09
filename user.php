@@ -902,6 +902,37 @@ class User
 
     }
 
+    private function oneButtonReturn($result, $previewsButton)
+    {
+        $current_page = (int)$this->text[10];
+        $pageNumber = $this->projectPageNumber($result);
+//        if ($previewsButton == false)
+    }
+
+    private function twoButtonReturn($result, $previewsButton)
+    {
+        $current_page = (int)$this->text[10];
+        $pageNumber = $this->projectPageNumber($result);
+    }
+
+    private function threeButtonReturn($result, $previewsButton)
+    {
+        $current_page = (int)$this->text[10];
+        $pageNumber = $this->projectPageNumber($result);
+    }
+
+    private function fourButtonReturn($result, $previewsButton)
+    {
+        $current_page = (int)$this->text[10];
+        $pageNumber = $this->projectPageNumber($result);
+    }
+
+    private function fiveButtonReturn($result, $haveNext, $previewsButton)
+    {
+        $current_page = (int)$this->text[10];
+        $pageNumber = $this->projectPageNumber($result);
+    }
+
     private function allOfficeProjectManager()
     {
         if ($this->text == "Main_Menu")
@@ -912,7 +943,7 @@ class User
         elseif (strpos($this->text, "Next_Page") == 0)
         {
             $result = $this->getProjects("office", 0);
-            $arr = [["text" => "منوی اصلی", "callback_data" => "Main_Menu"]];
+
             $current_page = (int)$this->text[10];
             for ($i = 1 ; $i <  $current_page + 1; $i++)
             {
@@ -925,25 +956,64 @@ class User
                 }
             }
             $count = 0;
-            while ($row = mysqli_fetch_array($result))
+            $result_temp = $result;
+            while ($row = mysqli_fetch_array($result_temp))
             {
                 $arr[] = [["text" => $row['name'], "callback_data" => $row['name_english']]];
                 $count++;
                 if ($count > 4)
                     break;
             }
+
+            $row = mysqli_fetch_array($result);
             $pageNumber = $this->projectPageNumber($result);
-            if (($current_page + 1) == $pageNumber)
-                $arr[] = [["text" => "صفحه ی قبل", "callback_data" => "Previews_Page"]];
+            if ($current_page  == $pageNumber)
+                $haveNext = false;
             else
-                $arr[] = [["text" => "صفحه ی قبل", "callback_data" => "Previews_Page"],["text" => "صفحه ی بعد", "callback_data" => "Next_Page"]];
-            echo $this->editMessageText("انتخاب کنید.", [$arr]);
+                $haveNext = true;
+            if ($count == 5)
+                $ans = $this->fiveButtonReturn($result, $haveNext, false);
+            elseif ($count == 4)
+                $ans = $this->fourButtonReturn($result, false);
+            elseif ($count == 3)
+                $ans = $this->threeButtonReturn($result, false);
+            elseif ($count == 2)
+                $ans = $this->twoButtonReturn($result, false);
+            elseif ($count == 1)
+                $ans = $this->oneButtonReturn($result, false);
+
+//            $arr = [
+//                [
+//                    ["text" => "منوی اصلی", "callback_data" => "Main_Menu"]
+//                ],
+//                [
+//                    ["text" => $row[0]['name'], "callback_data" => $row[0]['name_english']]
+//                ],
+//                [
+//                    ["text" => $row[0]['name'], "callback_data" => $row[0]['name_english']]
+//                ],
+//                [
+//                    ["text" => $row[0]['name'], "callback_data" => $row[0]['name_english']]
+//                ],
+//                [
+//                    ["text" => $row[0]['name'], "callback_data" => $row[0]['name_english']]
+//                ],
+//                [
+//                    ["text" => "صفحه ی قبل", "callback_data" => "Previews_Page"],["text" => "صفحه ی بعد", "callback_data" => "Next_Page"]
+//                ]
+//            ];
+//            $pageNumber = $this->projectPageNumber($result);
+//            if (($current_page + 1) == $pageNumber)
+//                $arr[] = [["text" => "صفحه ی قبل", "callback_data" => "Previews_Page"]];
+//            else
+//                $arr[] = [["text" => "صفحه ی قبل", "callback_data" => "Previews_Page"],["text" => "صفحه ی بعد", "callback_data" => "Next_Page"]];
+            echo $this->editMessageText("انتخاب کنید.", $arr);
 
         }
         elseif (strpos($this->text, "Previews_Page") == 0)
         {
             $result = $this->getProjects("office", 0);
-            $arr = [["text" => "منوی اصلی", "callback_data" => "Main_Menu"]];
+            $arr = [[["text" => "منوی اصلی", "callback_data" => "Main_Menu"]]];
             $current_page = (int)$this->text[10];
             for ($i = 1 ; $i <  $current_page - 1 ; $i++)
             {
