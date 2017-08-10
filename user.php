@@ -81,6 +81,8 @@ class User
             $this->afterEmailText();
         if ($this->text == "/start")
             $this->starter();
+        elseif ($this->text == "Contact_Us")
+            $this->contactUs();
         elseif ($this->level == "begin")
             $this->beginner();
         elseif ($this->level == "product_showed")
@@ -124,6 +126,7 @@ class User
 
     }
 
+
     private function frimlsPartitionManager()
     {
         if ($this->text == "Get_Catalog")
@@ -137,20 +140,14 @@ class User
             ]);
         }
         elseif ($this->text == "Contact_Us")
-            $this->editMessageText("ورود به سایت", [
-                [
-                    ["text" => "تماس با ما", "url" => "http://www.sahlan.co/%D8%AA%D9%85%D8%A7%D8%B3-%D8%A8%D8%A7-%D9%85%D8%A7/"]
-                ],
-                [
-                    ["text" => "منوی اصلی", "callback_data" => "Main_Menu"]
-                ]
-            ]);
+            $this->contactUs();
         elseif ($this->text == "Main_Menu")
         {
             $this->setLevel("begin");
             $this->showMainMenu(true);
         }
-        //TODO other buttons fucntions
+        elseif ($this->text == "Related_Projects")
+            $this->showBestOfficeProject();
     }
 
     private function setEmailStatus($status)
@@ -188,20 +185,14 @@ class User
                 ]);
             }
             elseif ($this->text == "Contact_Us")
-                $this->editMessageText("ورود به سایت", [
-                    [
-                        ["text" => "تماس با ما", "url" => "http://www.sahlan.co/%D8%AA%D9%85%D8%A7%D8%B3-%D8%A8%D8%A7-%D9%85%D8%A7/"]
-                    ],
-                    [
-                        ["text" => "منوی اصلی", "callback_data" => "Main_Menu"]
-                    ]
-                ]);
+                $this->contactUs();
             elseif ($this->text == "Main_Menu")
             {
                 $this->setLevel("begin");
                 $this->showMainMenu(true);
             }
-            //TODO other buttons fucntions
+            elseif ($this->text == "Related_Projects")
+                $this->showBestOfficeProject();
     }
 
     private function getClassicPartitionCatalog()
@@ -312,7 +303,7 @@ class User
                     ["text" => "درباره ی سهلان", "callback_data" => "About_Us_Button"]
                 ],
                 [
-                    ["text" => "تماس با سهلان", "url" => "http://www.sahlan.co/%D8%AA%D9%85%D8%A7%D8%B3-%D8%A8%D8%A7-%D9%85%D8%A7/"]
+                    ["text" => "تماس با سهلان", "callback_data" => "Contact_Us"]
                 ]
             ];
         if ($editStatus == true)
@@ -334,7 +325,7 @@ class User
                     ["text" => "دریافت کاتالوگ", "callback_data" => "Get_Catalog"]
                 ],
                 [
-                    ["text" => "پروژه های مرتبط", "callback_data" => "Related_Projects"]
+                    ["text" => "برخی از پروژه ها", "callback_data" => "Related_Projects"]
                 ],
                 [
                     ["text" => "تماس با ما", "callback_data" => "Contact_Us"]
@@ -358,7 +349,7 @@ class User
                     ["text" => "دریافت کاتالوگ", "callback_data" => "Get_Catalog"]
                 ],
                 [
-                    ["text" => "پروژه های مرتبط", "callback_data" => "Related_Projects"]
+                    ["text" => "برخی از پروژه ها", "callback_data" => "Related_Projects"]
                 ],
                 [
                     ["text" => "تماس با ما", "callback_data" => "Contact_Us"]
@@ -392,7 +383,7 @@ class User
                 ["text" => "دریافت کاتالوگ", "callback_data" => "Get_Catalog"]
             ],
             [
-                ["text" => "پروژه های مرتبط", "callback_data" => "Related_Projects"]
+                ["text" => "برخی از پروژه ها", "callback_data" => "Related_Projects"]
             ],
             [
                 ["text" => "تماس با ما", "callback_data" => "Contact_Us"]
@@ -416,20 +407,14 @@ class User
             ]);
         }
         elseif ($this->text == "Contact_Us")
-            $this->editMessageText("ورود به سایت", [
-                [
-                    ["text" => "تماس با ما", "url" => "http://www.sahlan.co/%D8%AA%D9%85%D8%A7%D8%B3-%D8%A8%D8%A7-%D9%85%D8%A7/"]
-                ],
-                [
-                    ["text" => "منوی اصلی", "callback_data" => "Main_Menu"]
-                ]
-            ]);
+            $this->contactUs();
         elseif ($this->text == "Main_Menu")
         {
             $this->setLevel("begin");
             $this->showMainMenu(true);
         }
-        //TODO other buttons fucntions
+        elseif ($this->text == "Related_Projects")
+            $this->showBestOfficeProject();
     }
 
     private function showTimberCouch()
@@ -440,7 +425,7 @@ class User
                 ["text" => "دریافت کاتالوگ", "callback_data" => "Get_Catalog"]
             ],
             [
-                ["text" => "پروژه های مرتبط", "callback_data" => "Related_Projects"]
+                ["text" => "برخی از پروژه ها", "callback_data" => "Related_Projects"]
             ],
             [
                 ["text" => "تماس با ما", "callback_data" => "Contact_Us"]
@@ -464,20 +449,14 @@ class User
             ]);
         }
         elseif ($this->text == "Contact_Us")
-            $this->editMessageText("ورود به سایت", [
-                [
-                    ["text" => "تماس با ما", "url" => "http://www.sahlan.co/%D8%AA%D9%85%D8%A7%D8%B3-%D8%A8%D8%A7-%D9%85%D8%A7/"]
-                ],
-                [
-                    ["text" => "منوی اصلی", "callback_data" => "Main_Menu"]
-                ]
-            ]);
+            $this->contactUs();
         elseif ($this->text == "Main_Menu")
         {
             $this->setLevel("begin");
             $this->showMainMenu(true);
         }
-        //TODO other buttons fucntions
+        elseif ($this->text == "Related_Projects")
+            $this->showBestOfficeProject();
     }
 
     private function showEdarCouch()
@@ -488,7 +467,7 @@ class User
                 ["text" => "دریافت کاتالوگ", "callback_data" => "Get_Catalog"]
             ],
             [
-                ["text" => "پروژه های مرتبط", "callback_data" => "Related_Projects"]
+                ["text" => "برخی از پروژه ها", "callback_data" => "Related_Projects"]
             ],
             [
                 ["text" => "تماس با ما", "callback_data" => "Contact_Us"]
@@ -512,20 +491,14 @@ class User
             ]);
         }
         elseif ($this->text == "Contact_Us")
-            $this->editMessageText("ورود به سایت", [
-                [
-                    ["text" => "تماس با ما", "url" => "http://www.sahlan.co/%D8%AA%D9%85%D8%A7%D8%B3-%D8%A8%D8%A7-%D9%85%D8%A7/"]
-                ],
-                [
-                    ["text" => "منوی اصلی", "callback_data" => "Main_Menu"]
-                ]
-            ]);
+            $this->contactUs();
         elseif ($this->text == "Main_Menu")
         {
             $this->setLevel("begin");
             $this->showMainMenu(true);
         }
-        //TODO other buttons fucntions
+        elseif ($this->text == "Related_Projects")
+            $this->showBestOfficeProject();
     }
 
     private function showKarinCouch()
@@ -536,7 +509,7 @@ class User
                 ["text" => "دریافت کاتالوگ", "callback_data" => "Get_Catalog"]
             ],
             [
-                ["text" => "پروژه های مرتبط", "callback_data" => "Related_Projects"]
+                ["text" => "برخی از پروژه ها", "callback_data" => "Related_Projects"]
             ],
             [
                 ["text" => "تماس با ما", "callback_data" => "Contact_Us"]
@@ -560,20 +533,14 @@ class User
             ]);
         }
         elseif ($this->text == "Contact_Us")
-            $this->editMessageText("ورود به سایت", [
-                [
-                    ["text" => "تماس با ما", "url" => "http://www.sahlan.co/%D8%AA%D9%85%D8%A7%D8%B3-%D8%A8%D8%A7-%D9%85%D8%A7/"]
-                ],
-                [
-                    ["text" => "منوی اصلی", "callback_data" => "Main_Menu"]
-                ]
-            ]);
+            $this->contactUs();
         elseif ($this->text == "Main_Menu")
         {
             $this->setLevel("begin");
             $this->showMainMenu(true);
         }
-        //TODO other buttons fucntions
+        elseif ($this->text == "Related_Projects")
+            $this->showBestOfficeProject();
     }
 
     private function showGroupDesk()
@@ -584,7 +551,7 @@ class User
                 ["text" => "دریافت کاتالوگ", "callback_data" => "Get_Catalog"]
             ],
             [
-                ["text" => "پروژه های مرتبط", "callback_data" => "Related_Projects"]
+                ["text" => "برخی از پروژه ها", "callback_data" => "Related_Projects"]
             ],
             [
                 ["text" => "تماس با ما", "callback_data" => "Contact_Us"]
@@ -608,20 +575,14 @@ class User
             ]);
         }
         elseif ($this->text == "Contact_Us")
-            $this->editMessageText("ورود به سایت", [
-                [
-                    ["text" => "تماس با ما", "url" => "http://www.sahlan.co/%D8%AA%D9%85%D8%A7%D8%B3-%D8%A8%D8%A7-%D9%85%D8%A7/"]
-                ],
-                [
-                    ["text" => "منوی اصلی", "callback_data" => "Main_Menu"]
-                ]
-            ]);
+            $this->contactUs();
         elseif ($this->text == "Main_Menu")
         {
             $this->setLevel("begin");
             $this->showMainMenu(true);
         }
-        //TODO other buttons fucntions
+        elseif ($this->text == "Related_Projects")
+            $this->showBestOfficeProject();
     }
 
     private function beginner()
@@ -660,10 +621,10 @@ class User
                     ["text" => "دریافت کاتالوگ", "callback_data" => "Get_Catalog"]
                 ],
                 [
-                    ["text" => "پروژه های مرتبط", "callback_data" => "Related_Projects"]
+                    ["text" => "برخی از پروژه ها", "callback_data" => "Related_Projects"]
                 ],
                 [
-                    ["text" => "تماس با ما", "url" => "http://www.sahlan.co/%D8%AA%D9%85%D8%A7%D8%B3-%D8%A8%D8%A7-%D9%85%D8%A7/"]
+                    ["text" => "تماس با ما", "callback_data" => "Contact_Us"]
                 ],
                 [
                     ["text" => "صفحه ی اصلی", "callback_data" => "Main_Menu"]
@@ -685,20 +646,14 @@ class User
             ]);
         }
         elseif ($this->text == "Contact_Us")
-            $this->editMessageText("ورود به سایت", [
-                [
-                    ["text" => "تماس با ما", "url" => "http://www.sahlan.co/%D8%AA%D9%85%D8%A7%D8%B3-%D8%A8%D8%A7-%D9%85%D8%A7/"]
-                ],
-                [
-                    ["text" => "منوی اصلی", "callback_data" => "Main_Menu"]
-                ]
-            ]);
+            $this->contactUs();
         elseif ($this->text == "Main_Menu")
         {
             $this->setLevel("begin");
             $this->showMainMenu(true);
         }
-        //TODO other buttons fucntions
+        elseif ($this->text == "Related_Projects")
+            $this->showBestOfficeProject();
     }
 
     private function showExhibitionStructure()
@@ -712,7 +667,7 @@ class User
                     ["text" => "دریافت کاتالوگ", "callback_data" => "Get_Catalog"]
                 ],
                 [
-                    ["text" => "پروژه های مرتبط", "callback_data" => "Related_Projects"]
+                    ["text" => "برخی از پروژه ها", "callback_data" => "Related_Projects"]
                 ],
                 [
                     ["text" => "تماس با ما", "callback_data" => "Contact_Us"]
@@ -737,20 +692,14 @@ class User
             ]);
         }
         elseif ($this->text == "Contact_Us")
-            $this->editMessageText("ورود به سایت", [
-                [
-                    ["text" => "تماس با ما", "url" => "http://www.sahlan.co/%D8%AA%D9%85%D8%A7%D8%B3-%D8%A8%D8%A7-%D9%85%D8%A7/"]
-                ],
-                [
-                    ["text" => "منوی اصلی", "callback_data" => "Main_Menu"]
-                ]
-            ]);
+            $this->contactUs();
         elseif ($this->text == "Main_Menu")
         {
             $this->setLevel("begin");
             $this->showMainMenu(true);
         }
-        //TODO other buttons fucntions
+        elseif ($this->text == "Related_Projects")
+            $this->showBestExhibitionProject();
     }
 
     private function showOfficePartition()
@@ -1290,7 +1239,7 @@ class User
             $this->emailGetting();
         else {
             $this->setLevel("all_exhibition_project_showed");
-            $result = $this->getProjects("ex", 1);
+            $result = $this->getProjects("ex", 0);
             $count = 0;
             $arr = [[["text" => "منوی اصلی", "callback_data" => "Main_Menu"]]];
             while ($row = mysqli_fetch_array($result))
@@ -1300,7 +1249,7 @@ class User
                 if ($count > 4)
                     break;
             }
-            if ($this->projectPageNumber("ex", 1) > 1)
+            if ($this->projectPageNumber("ex", 0) > 1)
                 array_push($arr, [["text" => "صفحه ی بعد", "callback_data" => "Next_Page_1"]]);
             $this->sendMessage("انتخاب کنید.",$arr);
         }
@@ -1413,6 +1362,17 @@ class User
         $this->editMessageText("بیش از 25  سال است که در سهلان با هدف ارتقا سطح کیفی محیط های کاری سازمان های کوچک و بزرگ، فعالیت خود را آغاز نموده ایم. برای دستیابی به این هدف، تلاش می کنیم تا محیط های کاری را مطابق با نیازهای امروز تعریف، طراحی و تجهیز نماییم. باور داریم محیط کاری و فضای اداری یک سازمان نقش مهمی در پیشرفت کسب وکار دارد و سبب افزایش اعتماد به نفس و انگیزه پرسنل سازمان می شود.",[[["text" => "بازگشت", "callback_data" => "Main_Menu"]]]);
     }
 
+    private function contactUs()
+    {
+        $this->editMessageText("با استفاده از شماره زیر کارشناسان ما آماده راهنمایی شما هستند:
+02142890000
+ همچنین می توانید از طریق وبسایت ما از جدیدترین محصولا و پروژه های ما مطلع شوید:
+www.sahlan.co", [
+    [
+        ["text" => "بازگشت", "callback_data" => "Main_Menu"]
+    ]
+        ]);
+    }
 
     private function starter()
     {
@@ -1427,7 +1387,7 @@ class User
                 ["text" => "درباره ی سهلان", "callback_data" => "About_Us_Button"]
             ],
             [
-                ["text" => "تماس با سهلان", "url" => "http://www.sahlan.co/%D8%AA%D9%85%D8%A7%D8%B3-%D8%A8%D8%A7-%D9%85%D8%A7/"]
+                ["text" => "تماس با سهلان", "callback_data" => "Contact_Us"]
             ]
         ]);
     }
