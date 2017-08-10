@@ -38,6 +38,11 @@ class User
         ])]);
     }
 
+    private function sendPhoto($url)
+    {
+        return $this->makeCurl("sendPhoto", ["chat_id" => $this->user_id, "photo" => $url]);
+    }
+
     private function editMessageText($text, $inline)
     {
         return $this->makeCurl("editMessageText", ["message_id" => $this->message_id ,"chat_id" => $this->user_id, "text" => $text, "reply_markup" => json_encode([
@@ -110,6 +115,12 @@ class User
             $this->exhibitionStructureManager();
         elseif ($this->level == "all_office_project_showed")
             $this->allOfficeProjectManager();
+        elseif ($this->level == "best_office_project_showed")
+            $this->bestOfficeProjectManager();
+        elseif ($this->level == "best_exhibition_project_showed")
+            $this->bestExhibitionProjectManager();
+        elseif ($this->level == "all_exhibition_project_showed")
+            $this->allExhibitionProjectManager();
 
     }
 
@@ -301,7 +312,7 @@ class User
                     ["text" => "درباره ی سهلان", "callback_data" => "About_Us_Button"]
                 ],
                 [
-                    ["text" => "تماس با سهلان", "callback_data" => "Contact_Us_Button"]
+                    ["text" => "تماس با سهلان", "url" => "http://www.sahlan.co/%D8%AA%D9%85%D8%A7%D8%B3-%D8%A8%D8%A7-%D9%85%D8%A7/"]
                 ]
             ];
         if ($editStatus == true)
@@ -621,8 +632,8 @@ class User
             $this->showProject();
         elseif ($this->text == "About_Us_Button")
             $this->showAbout();
-        elseif ($this->text == "Contact_Us_Button")
-            $this->contactUs();
+        elseif ($this->text == "Main_Menu")
+            $this->showMainMenu(true);
 
     }
 
@@ -652,7 +663,7 @@ class User
                     ["text" => "پروژه های مرتبط", "callback_data" => "Related_Projects"]
                 ],
                 [
-                    ["text" => "تماس با ما", "callback_data" => "Contact_Us"]
+                    ["text" => "تماس با ما", "url" => "http://www.sahlan.co/%D8%AA%D9%85%D8%A7%D8%B3-%D8%A8%D8%A7-%D9%85%D8%A7/"]
                 ],
                 [
                     ["text" => "صفحه ی اصلی", "callback_data" => "Main_Menu"]
@@ -811,15 +822,19 @@ class User
             return mysqli_query($this->db, "SELECT * FROM sahlan_bot.project WHERE type = '{$type}'");
     }
 
-    private function projectPageNumber($result)
+    private function projectPageNumber($type, $best)
     {
-        $count = 0;
-        while (mysqli_fetch_array($result))
-            $count++;
-        if (is_int($count/4))
-            return $count/4;
+        if ($best == 0)
+            $count = mysqli_query($this->db, "SELECT COUNT(*) FROM sahlan_bot.project WHERE type = '{$type}'");
         else
-            return floor($count/4) + 1;
+            $count = mysqli_query($this->db, "SELECT COUNT(*) FROM sahlan_bot.project WHERE type = '{$type}' AND best = 1");
+        $row = mysqli_fetch_array($count);
+        $count = $row[0];
+
+        if (is_int($count/5))
+            return $count/5;
+        else
+            return floor($count/5) + 1;
     }
 
     private function getDate($name)
@@ -877,7 +892,126 @@ class User
 
     private function showBestOfficeProject()
     {
+        if (!$this->checkMail())
+            $this->emailGetting();
+        else {
+            $this->setLevel("best_office_project_showed");
+            $result = $this->getProjects("office", 1);
+            $count = 0;
+            $arr = [[["text" => "منوی اصلی", "callback_data" => "Main_Menu"]]];
+            while ($row = mysqli_fetch_array($result))
+            {
+                array_push($arr, [["text" => $row['name'], "callback_data" => $row['name_english']]]);
+                $count++;
+                if ($count > 4)
+                    break;
+            }
+            if ($this->projectPageNumber("office", 1) > 1)
+                array_push($arr, [["text" => "صفحه ی بعد", "callback_data" => "Next_Page_1"]]);
+            $this->sendMessage("انتخاب کنید.",$arr);
+        }
+    }
 
+    private function bestOfficeProjectManager()
+    {
+        if ($this->text == "Main_Menu")
+        {
+            $this->setLevel("begin");
+            $this->showMainMenu(true);
+        }
+        elseif ($this->text[0] == "N" && $this->text[1] == "e" && $this->text[2] == "x")
+        {
+            $result = $this->getProjects("office", 1);
+            $arr = [[["text" => "منوی اصلی", "callback_data" => "Main_Menu"]]];
+            $current_page = (int)substr($this->text, 10, strlen($this->text) - 10);
+            for ($i = 1 ; $i <  $current_page + 1; $i++)
+            {
+                $count = 0;
+                while ($row = mysqli_fetch_array($result))
+                {
+                    $count++;
+                    if ($count > 4)
+                        break;
+                }
+            }
+            $count = 0;
+            $result_temp = $result;
+            while ($row = mysqli_fetch_array($result_temp))
+            {
+                array_push($arr,[["text" => $row['name'], "callback_data" => $row['name_english']]] );
+                $count++;
+                if ($count > 4)
+                    break;
+            }
+
+            $pageNumber = $this->projectPageNumber("office", 1);
+            $nextPage = $current_page + 1;
+            if (($current_page + 1)  == $pageNumber)
+            {
+                array_push($arr, [["text" => "صفحه ی قبل", "callback_data" => "Previews_Page_{$nextPage}"]]);
+            }
+            else
+            {
+                array_push($arr, [["text" => "صفحه ی قبل", "callback_data" => "Previews_Page_{$nextPage}"], ["text" => "صفحه ی بعد", "callback_data" => "Next_Page_{$nextPage}"]]);
+            }
+
+            $this->editMessageText("انتخاب کنید.", $arr);
+
+        }
+        elseif ($this->text[0] == "P" && $this->text[1] == "r" && $this->text[2] == "e")
+        {
+            $result = $this->getProjects("office", 1);
+            $arr = [[["text" => "منوی اصلی", "callback_data" => "Main_Menu"]]];
+            $current_page = (int)substr($this->text, 14, strlen($this->text) - 14);
+            for ($i = 1 ; $i <  $current_page - 1; $i++)
+            {
+                $count = 0;
+                while ($row = mysqli_fetch_array($result))
+                {
+                    $count++;
+                    if ($count > 4)
+                        break;
+                }
+            }
+            $count = 0;
+            $result_temp = $result;
+            while ($row = mysqli_fetch_array($result_temp))
+            {
+                array_push($arr,[["text" => $row['name'], "callback_data" => $row['name_english']]] );
+                $count++;
+                if ($count > 4)
+                    break;
+            }
+            if (($current_page - 1) == 1)
+            {
+                array_push($arr, [["text" => "صفحه ی بعد", "callback_data" => "Next_Page_1"]]);
+            }
+            else
+            {
+                $prePage = $current_page - 1;
+                array_push($arr, [["text" => "صفحه ی قبل", "callback_data" => "Previews_Page_{$prePage}"],["text" => "صفحه ی بعد", "callback_data" => "Next_Page_{$prePage}"]]);
+            }
+            $this->editMessageText("انتخاب کنید.", $arr);
+
+        }
+        elseif($row = mysqli_fetch_array($this->getDate($this->text)))
+        {
+            $urls = explode("*",$row['urls']);
+            for ($i = 0 ; $i < count($urls) ; $i++)
+            {
+                $this->sendPhoto($urls[$i]);
+            }
+            $this->sendMessage("بازگشت به منوی اصلی", [
+                [
+                    ["text" => "منوی اصلی", "callback_data" => "Main_Menu"]
+                ]
+            ]);
+        }
+        else
+        {
+            $this->setLevel("begin");
+            $this->showMainMenu(false);
+        }
     }
 
     private function showAllOfficeProject()
@@ -896,41 +1030,11 @@ class User
                 if ($count > 4)
                     break;
             }
-            array_push($arr, [["text" => "صفحه ی بعد", "callback_data" => "Next_Page_1"]]);
-            echo $this->editMessageText("انتخاب کنید.",[$arr]);
+            if ($this->projectPageNumber("office", 0) > 1)
+                array_push($arr, [["text" => "صفحه ی بعد", "callback_data" => "Next_Page_1"]]);
+            $this->sendMessage("انتخاب کنید.",$arr);
         }
 
-    }
-
-    private function oneButtonReturn($result, $previewsButton)
-    {
-        $current_page = (int)$this->text[10];
-        $pageNumber = $this->projectPageNumber($result);
-//        if ($previewsButton == false)
-    }
-
-    private function twoButtonReturn($result, $previewsButton)
-    {
-        $current_page = (int)$this->text[10];
-        $pageNumber = $this->projectPageNumber($result);
-    }
-
-    private function threeButtonReturn($result, $previewsButton)
-    {
-        $current_page = (int)$this->text[10];
-        $pageNumber = $this->projectPageNumber($result);
-    }
-
-    private function fourButtonReturn($result, $previewsButton)
-    {
-        $current_page = (int)$this->text[10];
-        $pageNumber = $this->projectPageNumber($result);
-    }
-
-    private function fiveButtonReturn($result, $haveNext, $previewsButton)
-    {
-        $current_page = (int)$this->text[10];
-        $pageNumber = $this->projectPageNumber($result);
     }
 
     private function allOfficeProjectManager()
@@ -940,11 +1044,11 @@ class User
             $this->setLevel("begin");
             $this->showMainMenu(true);
         }
-        elseif (strpos($this->text, "Next_Page") == 0)
+        elseif ($this->text[0] == "N" && $this->text[1] == "e" && $this->text[2] == "x")
         {
             $result = $this->getProjects("office", 0);
-
-            $current_page = (int)$this->text[10];
+            $arr = [[["text" => "منوی اصلی", "callback_data" => "Main_Menu"]]];
+            $current_page = (int)substr($this->text, 10, strlen($this->text) - 10);
             for ($i = 1 ; $i <  $current_page + 1; $i++)
             {
                 $count = 0;
@@ -959,63 +1063,32 @@ class User
             $result_temp = $result;
             while ($row = mysqli_fetch_array($result_temp))
             {
-                $arr[] = [["text" => $row['name'], "callback_data" => $row['name_english']]];
+                array_push($arr,[["text" => $row['name'], "callback_data" => $row['name_english']]] );
                 $count++;
                 if ($count > 4)
                     break;
             }
 
-            $row = mysqli_fetch_array($result);
-            $pageNumber = $this->projectPageNumber($result);
-            if ($current_page  == $pageNumber)
-                $haveNext = false;
+            $pageNumber = $this->projectPageNumber("office", 0);
+            $nextPage = $current_page + 1;
+            if (($current_page + 1)  == $pageNumber)
+            {
+                array_push($arr, [["text" => "صفحه ی قبل", "callback_data" => "Previews_Page_{$nextPage}"]]);
+            }
             else
-                $haveNext = true;
-            if ($count == 5)
-                $ans = $this->fiveButtonReturn($result, $haveNext, false);
-            elseif ($count == 4)
-                $ans = $this->fourButtonReturn($result, false);
-            elseif ($count == 3)
-                $ans = $this->threeButtonReturn($result, false);
-            elseif ($count == 2)
-                $ans = $this->twoButtonReturn($result, false);
-            elseif ($count == 1)
-                $ans = $this->oneButtonReturn($result, false);
+            {
+                array_push($arr, [["text" => "صفحه ی قبل", "callback_data" => "Previews_Page_{$nextPage}"], ["text" => "صفحه ی بعد", "callback_data" => "Next_Page_{$nextPage}"]]);
+            }
 
-//            $arr = [
-//                [
-//                    ["text" => "منوی اصلی", "callback_data" => "Main_Menu"]
-//                ],
-//                [
-//                    ["text" => $row[0]['name'], "callback_data" => $row[0]['name_english']]
-//                ],
-//                [
-//                    ["text" => $row[0]['name'], "callback_data" => $row[0]['name_english']]
-//                ],
-//                [
-//                    ["text" => $row[0]['name'], "callback_data" => $row[0]['name_english']]
-//                ],
-//                [
-//                    ["text" => $row[0]['name'], "callback_data" => $row[0]['name_english']]
-//                ],
-//                [
-//                    ["text" => "صفحه ی قبل", "callback_data" => "Previews_Page"],["text" => "صفحه ی بعد", "callback_data" => "Next_Page"]
-//                ]
-//            ];
-//            $pageNumber = $this->projectPageNumber($result);
-//            if (($current_page + 1) == $pageNumber)
-//                $arr[] = [["text" => "صفحه ی قبل", "callback_data" => "Previews_Page"]];
-//            else
-//                $arr[] = [["text" => "صفحه ی قبل", "callback_data" => "Previews_Page"],["text" => "صفحه ی بعد", "callback_data" => "Next_Page"]];
-            echo $this->editMessageText("انتخاب کنید.", $arr);
+            $this->editMessageText("انتخاب کنید.", $arr);
 
         }
-        elseif (strpos($this->text, "Previews_Page") == 0)
+        elseif ($this->text[0] == "P" && $this->text[1] == "r" && $this->text[2] == "e")
         {
             $result = $this->getProjects("office", 0);
             $arr = [[["text" => "منوی اصلی", "callback_data" => "Main_Menu"]]];
-            $current_page = (int)$this->text[10];
-            for ($i = 1 ; $i <  $current_page - 1 ; $i++)
+            $current_page = (int)substr($this->text, 14, strlen($this->text) - 14);
+            for ($i = 1 ; $i <  $current_page - 1; $i++)
             {
                 $count = 0;
                 while ($row = mysqli_fetch_array($result))
@@ -1026,28 +1099,43 @@ class User
                 }
             }
             $count = 0;
-            while ($row = mysqli_fetch_array($result))
+            $result_temp = $result;
+            while ($row = mysqli_fetch_array($result_temp))
             {
-                $arr[] = [["text" => $row['name'], "callback_data" => $row['name_english']]];
+                array_push($arr,[["text" => $row['name'], "callback_data" => $row['name_english']]] );
                 $count++;
                 if ($count > 4)
                     break;
             }
-            if (($current_page - 1) == 0)
-                $arr[] = [["text" => "صفحه ی بعد", "callback_data" => "Next_Page"]];
+            if (($current_page - 1) == 1)
+            {
+                array_push($arr, [["text" => "صفحه ی بعد", "callback_data" => "Next_Page_1"]]);
+            }
             else
-                $arr[] = [["text" => "صفحه ی قبل", "callback_data" => "Previews_Page"],["text" => "صفحه ی بعد", "callback_data" => "Next_Page"]];
-            $this->editMessageText("انتخاب کنید.", [$arr]);
+            {
+                $prePage = $current_page - 1;
+                array_push($arr, [["text" => "صفحه ی قبل", "callback_data" => "Previews_Page_{$prePage}"],["text" => "صفحه ی بعد", "callback_data" => "Next_Page_{$prePage}"]]);
+            }
+            $this->editMessageText("انتخاب کنید.", $arr);
 
         }
-        elseif($this->getDate($this->text))
+        elseif($row = mysqli_fetch_array($this->getDate($this->text)))
         {
-
+            $urls = explode("*",$row['urls']);
+            for ($i = 0 ; $i < count($urls) ; $i++)
+            {
+                $this->sendPhoto($urls[$i]);
+            }
+            $this->sendMessage("بازگشت به منوی اصلی", [
+                [
+                    ["text" => "منوی اصلی", "callback_data" => "Main_Menu"]
+                ]
+            ]);
         }
         else
         {
             $this->setLevel("begin");
-            $this->showMainMenu(true);
+            $this->showMainMenu(false);
         }
     }
 
@@ -1069,28 +1157,262 @@ class User
         if ($this->text == "Best_Projects")
             $this->showBestExhibitionProject();
         elseif ($this->text == "All_Projects")
-            $this->showAllBestExhibition();
+            $this->showAllExhibitionProject();
     }
 
     private function showBestExhibitionProject()
     {
-
+        if (!$this->checkMail())
+            $this->emailGetting();
+        else {
+            $this->setLevel("best_exhibition_project_showed");
+            $result = $this->getProjects("ex", 1);
+            $count = 0;
+            $arr = [[["text" => "منوی اصلی", "callback_data" => "Main_Menu"]]];
+            while ($row = mysqli_fetch_array($result))
+            {
+                array_push($arr, [["text" => $row['name'], "callback_data" => $row['name_english']]]);
+                $count++;
+                if ($count > 4)
+                    break;
+            }
+            if ($this->projectPageNumber("ex", 1) > 1)
+                array_push($arr, [["text" => "صفحه ی بعد", "callback_data" => "Next_Page_1"]]);
+            $this->sendMessage("انتخاب کنید.",$arr);
+        }
     }
 
-    private function showAllBestExhibition()
+    private function bestExhibitionProjectManager()
     {
+        if ($this->text == "Main_Menu")
+        {
+            $this->setLevel("begin");
+            $this->showMainMenu(true);
+        }
+        elseif ($this->text[0] == "N" && $this->text[1] == "e" && $this->text[2] == "x")
+        {
+            $result = $this->getProjects("ex", 1);
+            $arr = [[["text" => "منوی اصلی", "callback_data" => "Main_Menu"]]];
+            $current_page = (int)substr($this->text, 10, strlen($this->text) - 10);
+            for ($i = 1 ; $i <  $current_page + 1; $i++)
+            {
+                $count = 0;
+                while ($row = mysqli_fetch_array($result))
+                {
+                    $count++;
+                    if ($count > 4)
+                        break;
+                }
+            }
+            $count = 0;
+            $result_temp = $result;
+            while ($row = mysqli_fetch_array($result_temp))
+            {
+                array_push($arr,[["text" => $row['name'], "callback_data" => $row['name_english']]] );
+                $count++;
+                if ($count > 4)
+                    break;
+            }
 
+            $pageNumber = $this->projectPageNumber("ex", 1);
+            $nextPage = $current_page + 1;
+            if (($current_page + 1)  == $pageNumber)
+            {
+                array_push($arr, [["text" => "صفحه ی قبل", "callback_data" => "Previews_Page_{$nextPage}"]]);
+            }
+            else
+            {
+                array_push($arr, [["text" => "صفحه ی قبل", "callback_data" => "Previews_Page_{$nextPage}"], ["text" => "صفحه ی بعد", "callback_data" => "Next_Page_{$nextPage}"]]);
+            }
+
+            $this->editMessageText("انتخاب کنید.", $arr);
+
+        }
+        elseif ($this->text[0] == "P" && $this->text[1] == "r" && $this->text[2] == "e")
+        {
+            $result = $this->getProjects("ex", 1);
+            $arr = [[["text" => "منوی اصلی", "callback_data" => "Main_Menu"]]];
+            $current_page = (int)substr($this->text, 14, strlen($this->text) - 14);
+            for ($i = 1 ; $i <  $current_page - 1; $i++)
+            {
+                $count = 0;
+                while ($row = mysqli_fetch_array($result))
+                {
+                    $count++;
+                    if ($count > 4)
+                        break;
+                }
+            }
+            $count = 0;
+            $result_temp = $result;
+            while ($row = mysqli_fetch_array($result_temp))
+            {
+                array_push($arr,[["text" => $row['name'], "callback_data" => $row['name_english']]] );
+                $count++;
+                if ($count > 4)
+                    break;
+            }
+            if (($current_page - 1) == 1)
+            {
+                array_push($arr, [["text" => "صفحه ی بعد", "callback_data" => "Next_Page_1"]]);
+            }
+            else
+            {
+                $prePage = $current_page - 1;
+                array_push($arr, [["text" => "صفحه ی قبل", "callback_data" => "Previews_Page_{$prePage}"],["text" => "صفحه ی بعد", "callback_data" => "Next_Page_{$prePage}"]]);
+            }
+            $this->editMessageText("انتخاب کنید.", $arr);
+
+        }
+        elseif($row = mysqli_fetch_array($this->getDate($this->text)))
+        {
+            $urls = explode("*",$row['urls']);
+            for ($i = 0 ; $i < count($urls) ; $i++)
+            {
+                $this->sendPhoto($urls[$i]);
+            }
+            $this->sendMessage("بازگشت به منوی اصلی", [
+                [
+                    ["text" => "منوی اصلی", "callback_data" => "Main_Menu"]
+                ]
+            ]);
+        }
+        else
+        {
+            $this->setLevel("begin");
+            $this->showMainMenu(false);
+        }
+    }
+
+    private function showAllExhibitionProject()
+    {
+        if (!$this->checkMail())
+            $this->emailGetting();
+        else {
+            $this->setLevel("all_exhibition_project_showed");
+            $result = $this->getProjects("ex", 1);
+            $count = 0;
+            $arr = [[["text" => "منوی اصلی", "callback_data" => "Main_Menu"]]];
+            while ($row = mysqli_fetch_array($result))
+            {
+                array_push($arr, [["text" => $row['name'], "callback_data" => $row['name_english']]]);
+                $count++;
+                if ($count > 4)
+                    break;
+            }
+            if ($this->projectPageNumber("ex", 1) > 1)
+                array_push($arr, [["text" => "صفحه ی بعد", "callback_data" => "Next_Page_1"]]);
+            $this->sendMessage("انتخاب کنید.",$arr);
+        }
+    }
+
+    private function allExhibitionProjectManager()
+    {
+        if ($this->text == "Main_Menu")
+        {
+            $this->setLevel("begin");
+            $this->showMainMenu(true);
+        }
+        elseif ($this->text[0] == "N" && $this->text[1] == "e" && $this->text[2] == "x")
+        {
+            $result = $this->getProjects("ex", 0);
+            $arr = [[["text" => "منوی اصلی", "callback_data" => "Main_Menu"]]];
+            $current_page = (int)substr($this->text, 10, strlen($this->text) - 10);
+            for ($i = 1 ; $i <  $current_page + 1; $i++)
+            {
+                $count = 0;
+                while ($row = mysqli_fetch_array($result))
+                {
+                    $count++;
+                    if ($count > 4)
+                        break;
+                }
+            }
+            $count = 0;
+            $result_temp = $result;
+            while ($row = mysqli_fetch_array($result_temp))
+            {
+                array_push($arr,[["text" => $row['name'], "callback_data" => $row['name_english']]] );
+                $count++;
+                if ($count > 4)
+                    break;
+            }
+
+            $pageNumber = $this->projectPageNumber("ex", 0);
+            $nextPage = $current_page + 1;
+            if (($current_page + 1)  == $pageNumber)
+            {
+                array_push($arr, [["text" => "صفحه ی قبل", "callback_data" => "Previews_Page_{$nextPage}"]]);
+            }
+            else
+            {
+                array_push($arr, [["text" => "صفحه ی قبل", "callback_data" => "Previews_Page_{$nextPage}"], ["text" => "صفحه ی بعد", "callback_data" => "Next_Page_{$nextPage}"]]);
+            }
+
+            $this->editMessageText("انتخاب کنید.", $arr);
+
+        }
+        elseif ($this->text[0] == "P" && $this->text[1] == "r" && $this->text[2] == "e")
+        {
+            $result = $this->getProjects("ex", 0);
+            $arr = [[["text" => "منوی اصلی", "callback_data" => "Main_Menu"]]];
+            $current_page = (int)substr($this->text, 14, strlen($this->text) - 14);
+            for ($i = 1 ; $i <  $current_page - 1; $i++)
+            {
+                $count = 0;
+                while ($row = mysqli_fetch_array($result))
+                {
+                    $count++;
+                    if ($count > 4)
+                        break;
+                }
+            }
+            $count = 0;
+            $result_temp = $result;
+            while ($row = mysqli_fetch_array($result_temp))
+            {
+                array_push($arr,[["text" => $row['name'], "callback_data" => $row['name_english']]] );
+                $count++;
+                if ($count > 4)
+                    break;
+            }
+            if (($current_page - 1) == 1)
+            {
+                array_push($arr, [["text" => "صفحه ی بعد", "callback_data" => "Next_Page_1"]]);
+            }
+            else
+            {
+                $prePage = $current_page - 1;
+                array_push($arr, [["text" => "صفحه ی قبل", "callback_data" => "Previews_Page_{$prePage}"],["text" => "صفحه ی بعد", "callback_data" => "Next_Page_{$prePage}"]]);
+            }
+            $this->editMessageText("انتخاب کنید.", $arr);
+
+        }
+        elseif($row = mysqli_fetch_array($this->getDate($this->text)))
+        {
+            $urls = explode("*",$row['urls']);
+            for ($i = 0 ; $i < count($urls) ; $i++)
+            {
+                $this->sendPhoto($urls[$i]);
+            }
+            $this->sendMessage("بازگشت به منوی اصلی", [
+                [
+                    ["text" => "منوی اصلی", "callback_data" => "Main_Menu"]
+                ]
+            ]);
+        }
+        else
+        {
+            $this->setLevel("begin");
+            $this->showMainMenu(false);
+        }
     }
 
     private function showAbout()
     {
-
+        $this->editMessageText("بیش از 25  سال است که در سهلان با هدف ارتقا سطح کیفی محیط های کاری سازمان های کوچک و بزرگ، فعالیت خود را آغاز نموده ایم. برای دستیابی به این هدف، تلاش می کنیم تا محیط های کاری را مطابق با نیازهای امروز تعریف، طراحی و تجهیز نماییم. باور داریم محیط کاری و فضای اداری یک سازمان نقش مهمی در پیشرفت کسب وکار دارد و سبب افزایش اعتماد به نفس و انگیزه پرسنل سازمان می شود.",[[["text" => "بازگشت", "callback_data" => "Main_Menu"]]]);
     }
 
-    private function contactUs()
-    {
-
-    }
 
     private function starter()
     {
@@ -1105,7 +1427,7 @@ class User
                 ["text" => "درباره ی سهلان", "callback_data" => "About_Us_Button"]
             ],
             [
-                ["text" => "تماس با سهلان", "callback_data" => "Contact_Us_Button"]
+                ["text" => "تماس با سهلان", "url" => "http://www.sahlan.co/%D8%AA%D9%85%D8%A7%D8%B3-%D8%A8%D8%A7-%D9%85%D8%A7/"]
             ]
         ]);
     }
